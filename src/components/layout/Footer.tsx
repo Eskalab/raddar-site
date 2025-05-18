@@ -54,7 +54,7 @@ const Footer = () => {
           <div className="lg:col-span-1">
             <div className="flex-shrink-0 mb-6">
               <a href="/" className="flex items-center">
-                <span className="text-xl font-bold text-buildium-blue">Buildium</span>
+                <span className="text-xl font-bold text-buildium-blue">Raddar</span>
               </a>
             </div>
             <p className="text-gray-600 mb-6">
@@ -107,7 +107,7 @@ const Footer = () => {
         
         <div className="mt-12 pt-8 border-t border-gray-200">
           <p className="text-sm text-gray-500 text-center">
-            © {new Date().getFullYear()} Buildium Clone. All rights reserved.
+            © {new Date().getFullYear()} Raddar Clone. All rights reserved.
           </p>
         </div>
       </div>

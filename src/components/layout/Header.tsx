@@ -52,7 +52,7 @@ const Header = () => {
         {/* Logo */}
         <div className="flex-shrink-0">
           <a href="/" className="flex items-center">
-            <span className="text-xl font-bold text-buildium-blue">Buildium</span>
+            <span className="text-xl font-bold text-buildium-blue">Raddar</span>
           </a>
         </div>
 
