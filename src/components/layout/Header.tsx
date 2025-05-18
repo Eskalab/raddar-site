@@ -3,37 +3,39 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { cn } from '@/lib/utils';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Navigation menu items
-const navItems = [
+const getNavItems = (translations: Record<string, string>) => [
   { 
-    name: 'Products',
+    name: translations['nav.products'],
     href: '#',
     dropdownItems: [
-      { name: 'Property Management', href: '#' },
-      { name: 'Accounting', href: '#' },
-      { name: 'Maintenance', href: '#' },
-      { name: 'Leasing', href: '#' }
+      { name: translations['products.propertyManagement'], href: '#' },
+      { name: translations['products.accounting'], href: '#' },
+      { name: translations['products.maintenance'], href: '#' },
+      { name: translations['products.leasing'], href: '#' }
     ]
   },
   { 
-    name: 'Solutions',
+    name: translations['nav.solutions'],
     href: '#',
     dropdownItems: [
-      { name: 'For Property Managers', href: '#' },
-      { name: 'For Landlords', href: '#' },
-      { name: 'For HOAs', href: '#' }
+      { name: translations['solutions.propertyManagers'], href: '#' },
+      { name: translations['solutions.landlords'], href: '#' },
+      { name: translations['solutions.hoas'], href: '#' }
     ]
   },
-  { name: 'Pricing', href: '#' },
+  { name: translations['nav.pricing'], href: '#' },
   { 
-    name: 'Resources', 
+    name: translations['nav.resources'], 
     href: '#',
     dropdownItems: [
-      { name: 'Blog', href: '#' },
-      { name: 'Guides', href: '#' },
-      { name: 'Webinars', href: '#' },
-      { name: 'Case Studies', href: '#' }
+      { name: translations['resources.blog'], href: '#' },
+      { name: translations['resources.guides'], href: '#' },
+      { name: translations['resources.webinars'], href: '#' },
+      { name: translations['resources.caseStudies'], href: '#' }
     ]
   },
 ];
@@ -41,6 +43,9 @@ const navItems = [
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const { translations } = useLanguage();
+  
+  const navItems = getNavItems(translations);
 
   const toggleDropdown = (name: string) => {
     setActiveDropdown(activeDropdown === name ? null : name);
@@ -94,18 +99,20 @@ const Header = () => {
           ))}
         </nav>
 
-        {/* CTA Buttons */}
+        {/* CTA Buttons and Language Switcher */}
         <div className="hidden md:flex items-center space-x-2">
+          <LanguageSwitcher />
           <a href="#" className="text-sm font-medium text-buildium-blue hover:underline">
-            Log In
+            {translations['nav.login']}
           </a>
           <Button className="bg-buildium-blue hover:bg-blue-700">
-            Get Started
+            {translations['nav.getStarted']}
           </Button>
         </div>
 
         {/* Mobile Menu Button */}
-        <div className="md:hidden flex items-center">
+        <div className="md:hidden flex items-center space-x-2">
+          <LanguageSwitcher />
           <button
             type="button"
             className="text-gray-500 hover:text-gray-700"
@@ -156,10 +163,10 @@ const Header = () => {
                 href="#"
                 className="px-3 py-2 text-base font-medium text-center text-buildium-blue hover:underline"
               >
-                Log In
+                {translations['nav.login']}
               </a>
               <Button className="bg-buildium-blue hover:bg-blue-700 w-full">
-                Get Started
+                {translations['nav.getStarted']}
               </Button>
             </div>
           </div>
