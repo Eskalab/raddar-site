@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { FlagTriangleLeft, FlagTriangleRight } from 'lucide-react';
+import { Flag } from 'lucide-react';
 import { useLanguage, Language } from '@/contexts/LanguageContext';
 import { Button } from "@/components/ui/button";
 import {
@@ -20,23 +20,26 @@ const LanguageSwitcher = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="w-9 px-0">
-          {language === 'en' ? (
-            <FlagTriangleLeft className="h-5 w-5" />
-          ) : (
-            <FlagTriangleRight className="h-5 w-5" />
-          )}
-          <span className="sr-only">Toggle language</span>
+        <Button variant="ghost" size="sm" className="flex items-center gap-1.5">
+          <Flag className="h-4 w-4" />
+          <span className="text-xs font-medium uppercase">{language}</span>
+          <span className="sr-only">Change language</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => handleLanguageChange('en')} className={language === 'en' ? 'bg-muted' : ''}>
-          <FlagTriangleLeft className="mr-2 h-4 w-4" />
-          <span>English</span>
+          <Flag className="mr-2 h-4 w-4" />
+          <span className="flex items-center gap-1.5">
+            <span className="uppercase font-semibold">EN</span>
+            <span>English</span>
+          </span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handleLanguageChange('es')} className={language === 'es' ? 'bg-muted' : ''}>
-          <FlagTriangleRight className="mr-2 h-4 w-4" />
-          <span>Español</span>
+          <Flag className="mr-2 h-4 w-4" />
+          <span className="flex items-center gap-1.5">
+            <span className="uppercase font-semibold">ES</span>
+            <span>Español</span>
+          </span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
