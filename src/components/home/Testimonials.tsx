@@ -1,43 +1,46 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-
-const testimonials = [
-  {
-    quote: "Buildium has completely transformed how we manage our properties. The time savings alone has been worth the investment.",
-    author: "Sarah Johnson",
-    position: "Property Manager, Rockwell Properties",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&h=100"
-  },
-  {
-    quote: "The accounting features are incredibly robust. We've been able to eliminate multiple software subscriptions since switching to Buildium.",
-    author: "Michael Chen",
-    position: "Director, Urban Housing Solutions",
-    image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=100&h=100"
-  },
-  {
-    quote: "Our residents love the online portal for payments and maintenance requests. It's been a game-changer for our customer satisfaction.",
-    author: "Rebecca Williams",
-    position: "Owner, Sunset Property Management",
-    image: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=100&h=100"
-  }
-];
-
-const stats = [
-  { value: '16,000+', label: 'Customers Worldwide' },
-  { value: '2.5M+', label: 'Units Managed' },
-  { value: '95%', label: 'Customer Satisfaction' },
-  { value: '30%', label: 'Average Time Saved' }
-];
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Testimonials = () => {
+  const { translations } = useLanguage();
+  
+  const testimonials = [
+    {
+      quote: translations['testimonials.quote1'] || "Buildium has completely transformed how we manage our properties. The time savings alone has been worth the investment.",
+      author: translations['testimonials.author1'] || "Sarah Johnson",
+      position: translations['testimonials.position1'] || "Property Manager, Rockwell Properties",
+      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&h=100"
+    },
+    {
+      quote: translations['testimonials.quote2'] || "The accounting features are incredibly robust. We've been able to eliminate multiple software subscriptions since switching to Buildium.",
+      author: translations['testimonials.author2'] || "Michael Chen",
+      position: translations['testimonials.position2'] || "Director, Urban Housing Solutions",
+      image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=100&h=100"
+    },
+    {
+      quote: translations['testimonials.quote3'] || "Our residents love the online portal for payments and maintenance requests. It's been a game-changer for our customer satisfaction.",
+      author: translations['testimonials.author3'] || "Rebecca Williams",
+      position: translations['testimonials.position3'] || "Owner, Sunset Property Management",
+      image: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=100&h=100"
+    }
+  ];
+
+  const stats = [
+    { value: '16,000+', label: translations['testimonials.stat1'] || 'Customers Worldwide' },
+    { value: '2.5M+', label: translations['testimonials.stat2'] || 'Units Managed' },
+    { value: '95%', label: translations['testimonials.stat3'] || 'Customer Satisfaction' },
+    { value: '30%', label: translations['testimonials.stat4'] || 'Average Time Saved' }
+  ];
+
   return (
     <section className="py-16 md:py-24 bg-gradient-to-b from-gray-50 to-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold mb-4">What Our Customers Say</h2>
+          <h2 className="text-3xl font-bold mb-4">{translations['testimonials.title'] || 'What Our Customers Say'}</h2>
           <p className="text-lg text-gray-600">
-            Join thousands of property managers who trust Buildium to run their business.
+            {translations['testimonials.subtitle'] || 'Join thousands of property managers who trust Buildium to run their business.'}
           </p>
         </div>
 

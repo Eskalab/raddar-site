@@ -1,50 +1,55 @@
 
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Footer = () => {
-  const footerLinks = [
+  const { translations } = useLanguage();
+  
+  const getFooterLinks = () => [
     {
-      title: "Products",
+      title: translations['footer.products'] || "Products",
       links: [
-        { name: "Property Management", href: "#" },
-        { name: "Accounting", href: "#" },
-        { name: "Maintenance", href: "#" },
-        { name: "Leasing", href: "#" },
-        { name: "Resident Portal", href: "#" },
+        { name: translations['products.propertyManagement'] || "Property Management", href: "#" },
+        { name: translations['products.accounting'] || "Accounting", href: "#" },
+        { name: translations['products.maintenance'] || "Maintenance", href: "#" },
+        { name: translations['products.leasing'] || "Leasing", href: "#" },
+        { name: translations['footer.residentPortal'] || "Resident Portal", href: "#" },
       ],
     },
     {
-      title: "Solutions",
+      title: translations['footer.solutions'] || "Solutions",
       links: [
-        { name: "For Property Managers", href: "#" },
-        { name: "For Landlords", href: "#" },
-        { name: "For HOAs", href: "#" },
-        { name: "For Multi-Family", href: "#" },
-        { name: "For Commercial", href: "#" },
+        { name: translations['solutions.propertyManagers'] || "For Property Managers", href: "#" },
+        { name: translations['solutions.landlords'] || "For Landlords", href: "#" },
+        { name: translations['solutions.hoas'] || "For HOAs", href: "#" },
+        { name: translations['footer.multiFamily'] || "For Multi-Family", href: "#" },
+        { name: translations['footer.commercial'] || "For Commercial", href: "#" },
       ],
     },
     {
-      title: "Resources",
+      title: translations['footer.resources'] || "Resources",
       links: [
-        { name: "Blog", href: "#" },
-        { name: "Guides", href: "#" },
-        { name: "Webinars", href: "#" },
-        { name: "Case Studies", href: "#" },
-        { name: "Knowledge Base", href: "#" },
+        { name: translations['resources.blog'] || "Blog", href: "#" },
+        { name: translations['resources.guides'] || "Guides", href: "#" },
+        { name: translations['resources.webinars'] || "Webinars", href: "#" },
+        { name: translations['resources.caseStudies'] || "Case Studies", href: "#" },
+        { name: translations['footer.knowledgeBase'] || "Knowledge Base", href: "#" },
       ],
     },
     {
-      title: "Company",
+      title: translations['footer.company'] || "Company",
       links: [
-        { name: "About Us", href: "#" },
-        { name: "Careers", href: "#" },
-        { name: "Contact Us", href: "#" },
-        { name: "Privacy Policy", href: "#" },
-        { name: "Terms of Service", href: "#" },
+        { name: translations['footer.aboutUs'] || "About Us", href: "#" },
+        { name: translations['footer.careers'] || "Careers", href: "#" },
+        { name: translations['footer.contactUs'] || "Contact Us", href: "#" },
+        { name: translations['footer.privacyPolicy'] || "Privacy Policy", href: "#" },
+        { name: translations['footer.termsOfService'] || "Terms of Service", href: "#" },
       ],
     },
   ];
+
+  const footerLinks = getFooterLinks();
 
   return (
     <footer className="bg-gray-50 border-t border-gray-200">
@@ -58,7 +63,7 @@ const Footer = () => {
               </a>
             </div>
             <p className="text-gray-600 mb-6">
-              Property management software that streamlines your business
+              {translations['footer.tagline'] || 'Property management software that streamlines your business'}
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-500 hover:text-buildium-blue">
@@ -107,7 +112,7 @@ const Footer = () => {
         
         <div className="mt-12 pt-8 border-t border-gray-200">
           <p className="text-sm text-gray-500 text-center">
-            © {new Date().getFullYear()} Raddar Clone. All rights reserved.
+            © {new Date().getFullYear()} {translations['footer.copyright'] || 'Raddar Clone. All rights reserved.'}
           </p>
         </div>
       </div>
