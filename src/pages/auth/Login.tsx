@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -16,10 +16,10 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { toast } from '@/hooks/use-toast';
-import { UserRound } from 'lucide-react';
+import { UserRound, AlertTriangle } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Define form schema
 const formSchema = z.object({
@@ -32,9 +32,9 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const Login = () => {
-  const { translations, language } = useLanguage();
+  const { language } = useLanguage();
+  const { signIn, isSupabaseConfigured } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -46,36 +46,8 @@ const Login = () => {
 
   const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: values.email,
-        password: values.password,
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      toast({
-        title: language === 'en' ? 'Welcome back!' : '¡Bienvenido de nuevo!',
-        description: language === 'en' 
-          ? 'You have successfully logged in.' 
-          : 'Has iniciado sesión exitosamente.'
-      });
-      
-      navigate('/');
-    } catch (error) {
-      console.error('Login error:', error);
-      toast({
-        variant: "destructive",
-        title: language === 'en' ? 'Login Failed' : 'Error de inicio de sesión',
-        description: language === 'en' 
-          ? 'Invalid email or password. Please try again.' 
-          : 'Correo o contraseña incorrectos. Por favor, intente de nuevo.'
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    await signIn(values.email, values.password);
+    setIsLoading(false);
   };
 
   return (
@@ -95,6 +67,17 @@ const Login = () => {
               {language === 'en' ? 'Enter your details below' : 'Ingresa tus datos a continuación'}
             </p>
           </div>
+          
+          {!isSupabaseConfigured && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                {language === 'en' 
+                  ? 'Supabase environment variables are not configured. Authentication will not work.'
+                  : 'Las variables de entorno de Supabase no están configuradas. La autenticación no funcionará.'}
+              </AlertDescription>
+            </Alert>
+          )}
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -129,7 +112,7 @@ const Login = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-buildium-blue hover:bg-blue-700"
-                disabled={isLoading}
+                disabled={isLoading || !isSupabaseConfigured}
               >
                 {isLoading 
                   ? (language === 'en' ? 'Signing in...' : 'Iniciando sesión...') 

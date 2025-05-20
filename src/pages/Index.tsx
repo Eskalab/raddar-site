@@ -9,9 +9,11 @@ import Pricing from '@/components/home/Pricing';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
   const { translations } = useLanguage();
+  const { isSupabaseConfigured } = useAuth();
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -38,6 +40,15 @@ const Index = () => {
                 <Link to="/signup">{translations['cta.demo']}</Link>
               </Button>
             </div>
+            
+            {!isSupabaseConfigured && (
+              <div className="mt-6 bg-yellow-600/20 rounded-md p-3 text-white text-sm">
+                <p>
+                  {translations['supabase.notConfigured'] || 
+                    'Note: Authentication requires Supabase configuration. Please set up your environment variables.'}
+                </p>
+              </div>
+            )}
           </div>
         </section>
       </main>

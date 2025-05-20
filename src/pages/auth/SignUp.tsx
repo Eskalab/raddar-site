@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -16,10 +16,10 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { toast } from '@/hooks/use-toast';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, AlertTriangle } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Define the form schema
 const formSchema = z.object({
@@ -39,8 +39,8 @@ type FormValues = z.infer<typeof formSchema>;
 
 const SignUp = () => {
   const { language } = useLanguage();
+  const { signUp, isSupabaseConfigured } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -53,37 +53,8 @@ const SignUp = () => {
 
   const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.password,
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      toast({
-        title: language === 'en' ? 'Account created!' : '¡Cuenta creada!',
-        description: language === 'en'
-          ? 'Please check your email to confirm your account.'
-          : 'Por favor, verifica tu correo para confirmar tu cuenta.'
-      });
-
-      // Navigate to login page after successful signup
-      setTimeout(() => navigate('/login'), 2000);
-    } catch (error) {
-      console.error('Signup error:', error);
-      toast({
-        variant: "destructive",
-        title: language === 'en' ? 'Registration Failed' : 'Error de registro',
-        description: language === 'en'
-          ? 'There was a problem creating your account. Please try again.'
-          : 'Hubo un problema al crear tu cuenta. Por favor, intenta de nuevo.'
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    await signUp(values.email, values.password);
+    setIsLoading(false);
   };
 
   return (
@@ -103,6 +74,17 @@ const SignUp = () => {
               {language === 'en' ? 'Sign up to get started' : 'Regístrate para comenzar'}
             </p>
           </div>
+          
+          {!isSupabaseConfigured && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                {language === 'en' 
+                  ? 'Supabase environment variables are not configured. Authentication will not work.'
+                  : 'Las variables de entorno de Supabase no están configuradas. La autenticación no funcionará.'}
+              </AlertDescription>
+            </Alert>
+          )}
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -151,7 +133,7 @@ const SignUp = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-buildium-blue hover:bg-blue-700"
-                disabled={isLoading}
+                disabled={isLoading || !isSupabaseConfigured}
               >
                 {isLoading 
                   ? (language === 'en' ? 'Creating account...' : 'Creando cuenta...') 
