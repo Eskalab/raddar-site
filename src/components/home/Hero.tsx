@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Link } from 'react-router-dom';
 
 const Hero = () => {
   const { translations } = useLanguage();
@@ -18,11 +19,15 @@ const Hero = () => {
               {translations['hero.subtitle'] || 'The complete solution to manage rental properties, associations, and portfolios of all sizes.'}
             </p>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-              <Button size="lg" className="bg-buildium-blue hover:bg-blue-700 text-white">
-                {translations['cta.getStartedFree'] || 'Get Started Free'}
+              <Button size="lg" className="bg-buildium-blue hover:bg-blue-700 text-white" asChild>
+                <Link to="/signup">
+                  {translations['cta.getStartedFree'] || 'Get Started Free'}
+                </Link>
               </Button>
-              <Button variant="outline" size="lg" className="border-buildium-blue text-buildium-blue hover:bg-blue-50">
-                {translations['cta.demo'] || 'Schedule a Demo'}
+              <Button variant="outline" size="lg" className="border-buildium-blue text-buildium-blue hover:bg-blue-50" asChild>
+                <Link to="/signup">
+                  {translations['cta.demo'] || 'Schedule a Demo'}
+                </Link>
               </Button>
             </div>
             <p className="text-sm text-gray-500">
