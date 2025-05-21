@@ -1,159 +1,126 @@
 
+// src/pages/auth/SignUp.tsx
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'react-router-dom';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { UserPlus, AlertTriangle } from 'lucide-react';
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import { Alert, AlertDescription } from "@/components/ui/alert";
-
-// Define the form schema
-const formSchema = z.object({
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  password: z.string().min(6, {
-    message: "Password must be at least 6 characters.",
-  }),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
-
-type FormValues = z.infer<typeof formSchema>;
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const SignUp = () => {
-  const { language } = useLanguage();
-  const { signUp, isSupabaseConfigured } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState<'tenant' | 'renter'>('tenant');
   const [isLoading, setIsLoading] = useState(false);
+  const { signUp } = useAuth();
+  const { translations, language } = useLanguage();
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-      confirmPassword: "",
-    },
-  });
-
-  const onSubmit = async (values: FormValues) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      alert(language === 'en' ? 'Passwords do not match' : 'Las contraseñas no coinciden');
+      return;
+    }
+    
     setIsLoading(true);
-    await signUp(values.email, values.password);
-    setIsLoading(false);
+    try {
+      await signUp(email, password, role);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      
-      <main className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
-          <div className="text-center">
-            <div className="mx-auto h-12 w-12 rounded-full bg-buildium-blue/10 flex items-center justify-center">
-              <UserPlus className="h-6 w-6 text-buildium-blue" />
-            </div>
-            <h2 className="mt-6 text-3xl font-bold text-gray-900">
-              {language === 'en' ? 'Create an account' : 'Crea una cuenta'}
-            </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              {language === 'en' ? 'Sign up to get started' : 'Regístrate para comenzar'}
-            </p>
-          </div>
-          
-          {!isSupabaseConfigured && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                {language === 'en' 
-                  ? 'Supabase environment variables are not configured. Authentication will not work.'
-                  : 'Las variables de entorno de Supabase no están configuradas. La autenticación no funcionará.'}
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{language === 'en' ? 'Email address' : 'Correo electrónico'}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={language === 'en' ? "name@example.com" : "nombre@ejemplo.com"} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
+      <div className="w-full max-w-md">
+        <Card>
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">
+              {translations['signup.title'] || 'Create an account'}
+            </CardTitle>
+            <CardDescription className="text-center">
+              {translations['signup.description'] || 'Enter your email and password to sign up'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">{translations['form.email'] || 'Email'}</Label>
+                <Input 
+                  id="email"
+                  type="email"
+                  placeholder={translations['form.emailPlaceholder'] || 'name@example.com'}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">{translations['form.password'] || 'Password'}</Label>
+                <Input 
+                  id="password"
+                  type="password"
+                  placeholder={translations['form.passwordPlaceholder'] || '••••••••'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">
+                  {translations['form.confirmPassword'] || 'Confirm Password'}
+                </Label>
+                <Input 
+                  id="confirmPassword"
+                  type="password"
+                  placeholder={translations['form.confirmPasswordPlaceholder'] || '••••••••'}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
               
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{language === 'en' ? 'Password' : 'Contraseña'}</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="space-y-2">
+                <Label>
+                  {language === 'en' ? 'I am a:' : 'Soy un:'}
+                </Label>
+                <RadioGroup defaultValue="tenant" value={role} onValueChange={(value) => setRole(value as 'tenant' | 'renter')}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="tenant" id="tenant" />
+                    <Label htmlFor="tenant">{language === 'en' ? 'Property Owner/Manager' : 'Propietario/Administrador'}</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="renter" id="renter" />
+                    <Label htmlFor="renter">{language === 'en' ? 'Renter/Tenant' : 'Inquilino/Arrendatario'}</Label>
+                  </div>
+                </RadioGroup>
+              </div>
               
-              <FormField
-                control={form.control}
-                name="confirmPassword"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{language === 'en' ? 'Confirm Password' : 'Confirmar Contraseña'}</FormLabel>
-                    <FormControl>
-                      <Input type="password" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+              <Button type="submit" className="w-full bg-buildium-blue" disabled={isLoading}>
+                {isLoading ? (
+                  <span>{translations['signup.loading'] || 'Signing up...'}</span>
+                ) : (
+                  <span>{translations['signup.submit'] || 'Sign Up'}</span>
                 )}
-              />
-              
-              <Button 
-                type="submit" 
-                className="w-full bg-buildium-blue hover:bg-blue-700"
-                disabled={isLoading || !isSupabaseConfigured}
-              >
-                {isLoading 
-                  ? (language === 'en' ? 'Creating account...' : 'Creando cuenta...') 
-                  : (language === 'en' ? 'Create account' : 'Crear cuenta')}
               </Button>
             </form>
-          </Form>
-          
-          <div className="text-center mt-4">
-            <p className="text-sm text-gray-600">
-              {language === 'en' ? 'Already have an account?' : '¿Ya tienes una cuenta?'}{' '}
-              <Link to="/login" className="font-medium text-buildium-blue hover:text-blue-700">
-                {language === 'en' ? 'Log in here' : 'Inicia sesión aquí'}
+          </CardContent>
+          <CardFooter className="flex justify-center">
+            <div className="text-sm text-gray-500">
+              {translations['signup.haveAccount'] || 'Already have an account?'}{' '}
+              <Link to="/login" className="text-buildium-blue hover:underline">
+                {translations['signup.login'] || 'Login'}
               </Link>
-            </p>
-          </div>
-        </div>
-      </main>
-
-      <Footer />
+            </div>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 };

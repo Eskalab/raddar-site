@@ -6,13 +6,22 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from './LanguageContext';
 
+interface UserProfile {
+  id: string;
+  username: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+  role: 'tenant' | 'renter';
+}
+
 interface AuthContextProps {
   user: User | null;
   session: Session | null;
+  profile: UserProfile | null;
   loading: boolean;
   isSupabaseConfigured: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, role?: 'tenant' | 'renter') => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -25,6 +34,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { language } = useLanguage();
@@ -34,6 +44,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     import.meta.env.VITE_SUPABASE_URL && 
     import.meta.env.VITE_SUPABASE_ANON_KEY
   );
+
+  // Fetch user profile
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, username, full_name, avatar_url, role')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+      setProfile(data as UserProfile);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   useEffect(() => {
     if (!isSupabaseConfigured) {
@@ -46,6 +72,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       (event, currentSession) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
+        
+        if (currentSession?.user) {
+          // Use setTimeout to avoid Supabase auth callbacks deadlocks
+          setTimeout(() => {
+            fetchUserProfile(currentSession.user.id);
+          }, 0);
+        } else {
+          setProfile(null);
+        }
+        
         setLoading(false);
       }
     );
@@ -54,6 +90,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
+      
+      if (currentSession?.user) {
+        fetchUserProfile(currentSession.user.id);
+      }
+      
       setLoading(false);
     });
 
@@ -89,7 +130,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           : 'Has iniciado sesión exitosamente.'
       });
       
-      //navigate('/');
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
@@ -103,7 +143,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, role: 'tenant' | 'renter' = 'tenant') => {
     if (!isSupabaseConfigured) {
       toast({
         variant: "destructive",
@@ -116,12 +156,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
     
     try {
-      const { error } = await supabase.auth.signUp({
+      // First, sign up the user
+      const { error: signUpError, data } = await supabase.auth.signUp({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (signUpError) throw signUpError;
+
+      // If successful, update the user's role in the profiles table
+      if (data.user) {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ role })
+          .eq('id', data.user.id);
+
+        if (updateError) {
+          console.error('Error updating user role:', updateError);
+        }
+      }
 
       toast({
         title: language === 'en' ? 'Account created!' : '¡Cuenta creada!',
@@ -158,6 +211,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     <AuthContext.Provider value={{
       user,
       session,
+      profile,
       loading,
       isSupabaseConfigured,
       signIn,

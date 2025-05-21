@@ -10,8 +10,8 @@ import {
   FileText, 
   Users, 
   Calendar, 
-  Clock,
-  PieChart,
+  MessageSquare,
+  Wallet,
   Settings 
 } from "lucide-react";
 
@@ -21,9 +21,12 @@ interface SidebarProps {
 
 const DashboardSidebar = ({ className = "" }: SidebarProps) => {
   const { language } = useLanguage();
-  const { signOut } = useAuth();
+  const { signOut, profile } = useAuth();
+  
+  const isRenter = profile?.role === 'renter';
 
-  const sidebarItems = [
+  // Different sidebar items based on user role
+  const tenantSidebarItems = [
     {
       name: language === 'en' ? 'Dashboard' : 'Tablero',
       href: '/dashboard',
@@ -42,7 +45,7 @@ const DashboardSidebar = ({ className = "" }: SidebarProps) => {
     {
       name: language === 'en' ? 'Accounting' : 'Contabilidad',
       href: '/dashboard/accounting',
-      icon: <PieChart className="mr-3 h-5 w-5" />,
+      icon: <Wallet className="mr-3 h-5 w-5" />,
     },
     {
       name: language === 'en' ? 'Maintenance' : 'Mantenimiento',
@@ -52,9 +55,44 @@ const DashboardSidebar = ({ className = "" }: SidebarProps) => {
     {
       name: language === 'en' ? 'Tasks' : 'Tareas',
       href: '/dashboard/tasks',
-      icon: <Clock className="mr-3 h-5 w-5" />,
+      icon: <Calendar className="mr-3 h-5 w-5" />,
     },
   ];
+
+  const renterSidebarItems = [
+    {
+      name: language === 'en' ? 'Dashboard' : 'Tablero',
+      href: '/dashboard',
+      icon: <LayoutDashboard className="mr-3 h-5 w-5" />,
+    },
+    {
+      name: language === 'en' ? 'Payments' : 'Pagos',
+      href: '/dashboard/payments',
+      icon: <Wallet className="mr-3 h-5 w-5" />,
+    },
+    {
+      name: language === 'en' ? 'Maintenance' : 'Mantenimiento',
+      href: '/dashboard/maintenance',
+      icon: <Users className="mr-3 h-5 w-5" />,
+    },
+    {
+      name: language === 'en' ? 'Documents' : 'Documentos',
+      href: '/dashboard/documents',
+      icon: <FileText className="mr-3 h-5 w-5" />,
+    },
+    {
+      name: language === 'en' ? 'Messages' : 'Mensajes',
+      href: '/dashboard/messages',
+      icon: <MessageSquare className="mr-3 h-5 w-5" />,
+    },
+    {
+      name: language === 'en' ? 'Settings' : 'Ajustes',
+      href: '/dashboard/settings',
+      icon: <Settings className="mr-3 h-5 w-5" />,
+    },
+  ];
+
+  const sidebarItems = isRenter ? renterSidebarItems : tenantSidebarItems;
 
   return (
     <div className={`w-64 bg-buildium-navy text-white flex flex-col h-screen ${className}`}>
@@ -79,6 +117,12 @@ const DashboardSidebar = ({ className = "" }: SidebarProps) => {
       </nav>
 
       <div className="p-4 mt-auto">
+        <p className="text-sm text-gray-400 mb-2">
+          {isRenter 
+            ? (language === 'en' ? 'Logged in as Renter' : 'Conectado como Inquilino')
+            : (language === 'en' ? 'Logged in as Tenant' : 'Conectado como Propietario')
+          }
+        </p>
         <Button 
           variant="outline" 
           className="w-full text-white border-white hover:bg-white hover:text-buildium-navy"
