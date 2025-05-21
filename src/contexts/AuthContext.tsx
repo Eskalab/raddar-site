@@ -89,7 +89,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           : 'Has iniciado sesión exitosamente.'
       });
       
-      navigate('/');
+      //navigate('/');
+      navigate('/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
