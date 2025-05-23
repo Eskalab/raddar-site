@@ -14,6 +14,8 @@ import { useAuth } from "./contexts/AuthContext";
 import Login from "./pages/auth/Login";
 import SignUp from "./pages/auth/SignUp";
 import React from "react";
+import PropertiesPage from "./pages/dashboard/properties/PropertiesPage";
+import PropertyDetailsPage from "./pages/dashboard/properties/PropertyDetailsPage";
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -54,10 +56,26 @@ const InnerApp = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
       <Route 
-        path="/dashboard/*" 
+        path="/dashboard" 
         element={
           <ProtectedRoute>
             <RoleBasedDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/dashboard/properties" 
+        element={
+          <ProtectedRoute>
+            <PropertiesPage />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/dashboard/properties/:id" 
+        element={
+          <ProtectedRoute>
+            <PropertyDetailsPage />
           </ProtectedRoute>
         } 
       />

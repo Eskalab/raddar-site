@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ interface SidebarProps {
 const DashboardSidebar = ({ className = "" }: SidebarProps) => {
   const { language } = useLanguage();
   const { signOut, profile } = useAuth();
+  const location = useLocation();
   
   const isRenter = profile?.role === 'renter';
 
@@ -33,8 +34,8 @@ const DashboardSidebar = ({ className = "" }: SidebarProps) => {
       icon: <LayoutDashboard className="mr-3 h-5 w-5" />,
     },
     {
-      name: language === 'en' ? 'Rentals' : 'Alquileres',
-      href: '/dashboard/rentals',
+      name: language === 'en' ? 'Properties' : 'Propiedades',
+      href: '/dashboard/properties',
       icon: <Home className="mr-3 h-5 w-5" />,
     },
     {
@@ -94,6 +95,14 @@ const DashboardSidebar = ({ className = "" }: SidebarProps) => {
 
   const sidebarItems = isRenter ? renterSidebarItems : tenantSidebarItems;
 
+  // Check if current route is active or is a child of the current route
+  const isActiveRoute = (href: string) => {
+    if (href === '/dashboard' && location.pathname === '/dashboard') {
+      return true;
+    }
+    return location.pathname.startsWith(href) && href !== '/dashboard';
+  };
+
   return (
     <div className={`w-64 bg-buildium-navy text-white flex flex-col h-screen ${className}`}>
       <div className="p-4 border-b border-slate-700">
@@ -106,7 +115,11 @@ const DashboardSidebar = ({ className = "" }: SidebarProps) => {
             <li key={item.name}>
               <Link 
                 to={item.href} 
-                className="flex items-center px-4 py-2 hover:bg-buildium-navy/90 text-white"
+                className={`flex items-center px-4 py-2 ${
+                  isActiveRoute(item.href) 
+                    ? 'bg-buildium-navy-light text-white' 
+                    : 'hover:bg-buildium-navy/90 text-white'
+                }`}
               >
                 {item.icon}
                 <span>{item.name}</span>
