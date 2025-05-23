@@ -11,36 +11,67 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import DocumentUpload from '@/components/dashboard/documents/DocumentUpload';
 import TenantAssignForm from '@/components/dashboard/tenants/TenantAssignForm';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useProperties } from '@/hooks/useProperties';
 
 const PropertyDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
+  const { updateProperty } = useProperties();
 
   const { data: property, isLoading, error } = useQuery({
     queryKey: ['property', id],
     queryFn: async () => {
       if (!id) throw new Error('Property ID is required');
-      const { data, error } = await supabase
+      
+      // Fetch property details
+      const { data: propertyData, error: propertyError } = await supabase
         .from('properties')
-        .select(`
-          *,
-          profiles:tenant_id (
-            id, 
-            full_name, 
-            username,
-            avatar_url
-          )
-        `)
+        .select('*')
         .eq('id', id)
         .single();
       
-      if (error) throw error;
-      return data;
+      if (propertyError) throw propertyError;
+      
+      // If there's a tenant, fetch their profile separately
+      if (propertyData.tenant_id) {
+        const { data: tenantProfile, error: tenantError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', propertyData.tenant_id)
+          .single();
+        
+        if (!tenantError && tenantProfile) {
+          // Add tenant profile data to the property object
+          propertyData.tenant_profile = tenantProfile;
+        }
+      }
+      
+      return propertyData;
     },
     enabled: !!id,
   });
+
+  const removeTenant = async () => {
+    if (!id || !property) return;
+    
+    try {
+      await updateProperty(id, { tenant_id: null });
+      toast({
+        title: "Success",
+        description: "Tenant removed successfully",
+      });
+    } catch (error) {
+      console.error("Error removing tenant:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to remove tenant. Please try again.",
+      });
+    }
+  };
 
   if (isLoading) {
     return <div className="flex justify-center p-12">Loading property details...</div>;
@@ -175,20 +206,18 @@ const PropertyDetailsPage = () => {
               {property.tenant_id ? (
                 <div className="space-y-4">
                   <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                      {property.profiles?.avatar_url ? (
-                        <img 
-                          src={property.profiles.avatar_url} 
-                          alt="Tenant" 
-                          className="w-full h-full rounded-full object-cover" 
-                        />
+                    <Avatar className="h-12 w-12">
+                      {property.tenant_profile?.avatar_url ? (
+                        <AvatarImage src={property.tenant_profile.avatar_url} alt="Tenant" />
                       ) : (
-                        <User size={24} className="text-gray-400" />
+                        <AvatarFallback>
+                          <User size={24} className="text-gray-400" />
+                        </AvatarFallback>
                       )}
-                    </div>
+                    </Avatar>
                     <div>
-                      <h3 className="font-medium">{property.profiles?.full_name || 'Unnamed Tenant'}</h3>
-                      <p className="text-sm text-muted-foreground">{property.profiles?.username || 'No username'}</p>
+                      <h3 className="font-medium">{property.tenant_profile?.full_name || 'Unnamed Tenant'}</h3>
+                      <p className="text-sm text-muted-foreground">{property.tenant_profile?.username || 'No username'}</p>
                     </div>
                   </div>
                   
@@ -196,7 +225,7 @@ const PropertyDetailsPage = () => {
                     variant="destructive" 
                     onClick={() => {
                       if (window.confirm('Are you sure you want to remove this tenant from the property?')) {
-                        // Remove tenant logic
+                        removeTenant();
                       }
                     }}
                   >

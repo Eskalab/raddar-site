@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useProperties } from '@/hooks/useProperties';
+import { useProperties, Property } from '@/hooks/useProperties';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const propertySchema = z.object({
@@ -18,11 +17,11 @@ const propertySchema = z.object({
   city: z.string().min(2, { message: "City is required" }),
   state: z.string().min(2, { message: "State is required" }),
   zip_code: z.string().min(5, { message: "Valid ZIP code is required" }),
-  bedrooms: z.number().min(0, { message: "Enter valid number of bedrooms" }),
-  bathrooms: z.number().min(0, { message: "Enter valid number of bathrooms" }),
-  square_feet: z.number().min(1, { message: "Valid square footage is required" }),
-  monthly_rent: z.number().min(0, { message: "Valid monthly rent is required" }),
-  security_deposit: z.number().min(0, { message: "Valid security deposit is required" }),
+  bedrooms: z.coerce.number().min(0, { message: "Enter valid number of bedrooms" }),
+  bathrooms: z.coerce.number().min(0, { message: "Enter valid number of bathrooms" }),
+  square_feet: z.coerce.number().min(1, { message: "Valid square footage is required" }),
+  monthly_rent: z.coerce.number().min(0, { message: "Valid monthly rent is required" }),
+  security_deposit: z.coerce.number().min(0, { message: "Valid security deposit is required" }),
   available_from: z.string().min(1, { message: "Available date is required" }),
   description: z.string().optional(),
   amenities: z.array(z.string()).default([]),
@@ -32,7 +31,7 @@ type PropertyFormValues = z.infer<typeof propertySchema>;
 
 interface PropertyFormProps {
   onSuccess?: () => void;
-  property?: any;
+  property?: Property;
 }
 
 const PropertyForm = ({ onSuccess, property }: PropertyFormProps) => {
@@ -88,7 +87,24 @@ const PropertyForm = ({ onSuccess, property }: PropertyFormProps) => {
           description: "Property updated successfully",
         });
       } else {
-        await addProperty(data);
+        // Create a proper non-optional object that satisfies the Property type requirements
+        const propertyData: Omit<Property, 'id' | 'owner_id'> = {
+          name: data.name,
+          address: data.address,
+          city: data.city,
+          state: data.state,
+          zip_code: data.zip_code,
+          bedrooms: data.bedrooms,
+          bathrooms: data.bathrooms,
+          square_feet: data.square_feet,
+          monthly_rent: data.monthly_rent,
+          security_deposit: data.security_deposit,
+          available_from: data.available_from,
+          description: data.description || '',
+          amenities: data.amenities || [],
+        };
+        
+        await addProperty(propertyData);
         toast({
           title: "Success",
           description: "Property added successfully",

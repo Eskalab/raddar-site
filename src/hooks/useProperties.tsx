@@ -1,13 +1,13 @@
 
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 export interface Property {
   id: string;
   owner_id: string;
-  tenant_id?: string;
+  tenant_id?: string | null;
   name: string;
   address: string;
   city: string;
@@ -19,10 +19,16 @@ export interface Property {
   monthly_rent: number;
   security_deposit: number;
   available_from: string;
-  description?: string;
-  amenities?: string[];
+  description: string;
+  amenities: string[];
   created_at?: string;
   updated_at?: string;
+  tenant_profile?: {
+    id: string;
+    full_name: string | null;
+    username: string | null;
+    avatar_url: string | null;
+  };
 }
 
 export const useProperties = () => {
